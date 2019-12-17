@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>ARTINX CAN网络协议</title>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+        
+        <style>
+.task-list-item { list-style-type: none; } .task-list-item-checkbox { margin-left: -20px; vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        
+        
+    </head>
+    <body class="vscode-light">
+        <h1 id="artinx-can%e7%bd%91%e7%bb%9c%e5%8d%8f%e8%ae%ae">ARTINX CAN网络协议</h1>
+<p>编写者：袁雨航</p>
+<p>编写版本： beta 0.0</p>
+<p>编写日期：2019/11/4</p>
+<h2 id="0-%e5%89%8d%e8%a8%80">0 前言</h2>
+<p>新赛季本队机器人采用了分布式的嵌入式系统，各个模块之间需要基于可靠的通讯方式，使用自定通讯协议进行高速低时延通讯。</p>
+<p>在比较SPI,USART,CAN等协议的特点后，我们决定使用CAN，因为它可靠性最高，拓展性很强。而针对CAN的通讯特点，我们初步设计了一台针对云台板+底盘板+超级电容板+IMU板的通讯协议。</p>
+<h2 id="1-%e6%80%bb%e8%ae%be%e5%ae%9a">1 总设定</h2>
+<p>1.云台板与底盘板分别通过CAN1控制各种的电机</p>
+<p>2.云台板与底盘板，IMU模块等在同一CAN2网络中</p>
+<p>3.CAN1网络遵循大疆产品说明书中的协议设定，不添加自主模块</p>
+<p>4.CAN2网络遵循自定协议，均为自主模块</p>
+<p>5.暂时只针对步兵</p>
+<h2 id="2-%e5%9b%be%e7%a4%ba">2. 图示</h2>
+<p><img src="file:///c:\Users\Administrator\Desktop\CAN\show1.PNG" alt="show1.PNG"></p>
+<p>虽然由于CAN协议的特点，想要知道信息的发送者和接收者是不可能且没有实际意义的。但是对帧ID的归属做界定，可以使大家理解整个网络更加清晰明了，也更容易写代码。</p>
+<h2 id="3%e8%a6%81%e6%b1%82%e4%b8%8e%e8%af%b4%e6%98%8e">3.要求与说明</h2>
+<p>读者极有可能无法理解为什么这个系统需要什么样的设计，当看到协议中详细的细节时会陷入迷茫，因此我们对系统的要求做进一步的说明。</p>
+<p>1.系统要能识别任何部分的离线或失控，并快速进入应急方案。</p>
+<p>2.系统中传输的数据须简单直接。</p>
+<h2 id="4can%e9%85%8d%e7%bd%ae">4.CAN配置</h2>
+<p>波特率 1Mbit/s,暂时都不使用过滤器。</p>
+<h2 id="5%e6%8e%a5%e5%8f%a3%e5%8d%8f%e8%ae%ae%e8%af%b4%e6%98%8e">5.接口协议说明</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">StdID</th>
+<th style="text-align:center">DLC</th>
+<th style="text-align:center">Freq(括号内为转化为DLC=8时的等效频率)</th>
+<th style="text-align:left">Mean</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0x001</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">需要时</td>
+<td style="text-align:left">屏蔽与复位设备</td>
+</tr>
+<tr>
+<td style="text-align:center">0x002</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1KHz(611Hz)</td>
+<td style="text-align:left">同步时钟</td>
+</tr>
+<tr>
+<td style="text-align:center">0x003</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">10Hz(7Hz)</td>
+<td style="text-align:left">云台报告自身CAN1网络设备在线情况</td>
+</tr>
+<tr>
+<td style="text-align:center">0x004</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">10Hz(7Hz)</td>
+<td style="text-align:left">底盘报告自身CAN1网络设备在线情况</td>
+</tr>
+<tr>
+<td style="text-align:center">0x011</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">150Hz (ch1)</td>
+<td style="text-align:left">底盘控制（纯遥控器模式）</td>
+</tr>
+<tr>
+<td style="text-align:center">0x012</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">150Hz (ch1)</td>
+<td style="text-align:left">底盘控制（纯键盘模式）</td>
+</tr>
+<tr>
+<td style="text-align:center">0x013</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">150Hz (ch1)</td>
+<td style="text-align:left">底盘控制（混合模式）</td>
+</tr>
+<tr>
+<td style="text-align:center">0x031</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">50Hz</td>
+<td style="text-align:left">17mm发射机构信息（缓冲，冷却速率，加点，射速）</td>
+</tr>
+<tr>
+<td style="text-align:center">0x032</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">100Hz (ch2)</td>
+<td style="text-align:left">云台反导绝对姿态（Yaw，Pitch）</td>
+</tr>
+<tr>
+<td style="text-align:center">0x120</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">需要时</td>
+<td style="text-align:left">超级电容工作情况</td>
+</tr>
+<tr>
+<td style="text-align:center">0x121</td>
+<td style="text-align:center">8</td>
+<td style="text-align:center">1kHz</td>
+<td style="text-align:left">实时功率，输入电压</td>
+</tr>
+<tr>
+<td style="text-align:center">0x122</td>
+<td style="text-align:center">6</td>
+<td style="text-align:center">50Hz(44Hz)</td>
+<td style="text-align:left">电容电压，充电速度，放电速度</td>
+</tr>
+<tr>
+<td style="text-align:center">0x130</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">需要时</td>
+<td style="text-align:left">IMU板ID，工作情况，量程与频率约定</td>
+</tr>
+<tr>
+<td style="text-align:center">0x131+ID</td>
+<td style="text-align:center">6</td>
+<td style="text-align:center">500Hz(450Hz)</td>
+<td style="text-align:left">姿态角信息</td>
+</tr>
+<tr>
+<td style="text-align:center">0x141+ID</td>
+<td style="text-align:center">6</td>
+<td style="text-align:center">100Hz(90Hz)</td>
+<td style="text-align:left">角速度信息</td>
+</tr>
+<tr>
+<td style="text-align:center">0x151+ID</td>
+<td style="text-align:center">6</td>
+<td style="text-align:center">100Hz(90Hz)</td>
+<td style="text-align:left">加速度信息</td>
+</tr>
+</tbody>
+</table>
+<p>频率计算说明：</p>
+<p>DBUS每14ms发送一次数据，频率为71.42Hz，所以底盘控制设定为150Hz。</p>
+<p>雷达站应该是使用裁判系统的串口进行数据传递，已知裁判系统串口频率最高的信息为50Hz,机器人交换数据上限10Hz。虽然我认为10Hz不足以反导，但是应该也不会超过100Hz。暂时设定为100Hz。</p>
+<p>MP6050更新频率最高1000Hz，暂时取500Hz.</p>
+<p>超级电容使用霍尔效应的电流计，采样频率取决于ADC频率，其远大于1kHz, 取1kHz。</p>
+<p>CAN 在1Mbits/s的波特率下最大带宽为6950帧/s。负载越大，低优先级帧的实时性越差。当负载率达到60%的情况下，优先级最高的节点都有至少25%的延时，优先级最低的延时达到了4倍。</p>
+<p>以2块IMU计，现有负载为45%。通过同步命令，可以达到发一帧等一帧的效果，即无视优先级同等低延时。</p>
+<h2 id="6%e9%80%bb%e8%be%91%e8%af%b4%e6%98%8e">6.逻辑说明</h2>
+<h3 id="61-%e5%b1%8f%e8%94%bd%e4%b8%8e%e5%a4%8d%e4%bd%8d%e5%91%bd%e4%bb%a40x001%e7%9a%84%e9%80%bb%e8%be%91">6.1 屏蔽与复位命令（0x001）的逻辑</h3>
+<p>屏蔽与复位命令为权限与优先级最高的命令，在网络中只能有一个节点有发送的权限，权限的移交顺位为：云台板-&gt;底盘板。</p>
+<p>每个节点在该命令中由2bits控制，屏蔽位与重启位。</p>
+<p>当除发送者之外的任意节点接收到此命令后，应做出以下反应</p>
+<ol>
+<li>自身屏蔽位被置1：停止发送信息</li>
+<li>自身屏蔽位被置0：开始发送信息</li>
+<li>其他设备屏蔽位被置1：无视接收到的该设备信息。</li>
+<li>其他设备屏蔽位被置0：使用接收到的该设备信息。</li>
+<li>在自身屏蔽位被置1的前提下（可以不在同一帧中发生），自身重启位被置1： 尝试重启设备，重启成功后 发送相应回应，撤销屏蔽。</li>
+</ol>
+<p>其余的情况为未定义的行为，任何节点都不反应。</p>
+<h3 id="62-%e5%88%9d%e5%a7%8b%e5%8c%96%e7%9a%84%e6%8f%8f%e8%bf%b0">6.2 初始化的描述</h3>
+<p><img src="file:///c:\Users\Administrator\Desktop\CAN\%E4%BA%91%E5%8F%B0%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B%E5%9B%BE.PNG" alt="云台启动流程图.PNG"></p>
+<p>云台板启动流程图</p>
+<h3 id="63-%e5%bf%ab%e9%80%9f%e5%88%87%e6%8d%a2">6.3 快速切换</h3>
+<p>系统设计成这个样子，是为了当某个模块失灵时，可以直接切换备胎且备胎不需要等待初始化，即热备冗余。</p>
+<p>具体做法如下</p>
+<p><img src="file:///c:\Users\Administrator\Desktop\CAN\%E5%BF%AB%E9%80%9F%E5%88%87%E6%8D%A2%E6%B5%81%E7%A8%8B%E5%9B%BE.PNG" alt="快速切换流程图.PNG"></p>
+<p>理论上只要发送一次0x001命令就能完成屏蔽，切换，重启的操作。</p>
+<h3 id="64-%e5%90%8c%e6%ad%a5%e6%97%b6%e5%ba%8f%e8%af%b4%e6%98%8e">6.4 同步时序说明</h3>
+<p>CAN总线的特点是没有直接的带宽分配，实际上到底发送了什么数据和从发送到接收的延迟是不完全可控的。为了保证数据的稳定性与低延时，使用特点命令控制所有节点的发送节拍。也可以理解为将几种ID的命令整合为一个巨帧，其中的时间间隔由各自节点接收到同步命令后，通过各自的Timer控制。</p>
+<p><img src="file:///c:\Users\Administrator\Desktop\CAN\%E5%90%8C%E6%AD%A51.PNG" alt="同步1.PNG"></p>
+<pre><code>命令A的集合={0x121} 1000Hz级别 Sum=1000Hz
+
+命令B的集合={0x131+ID*2，}  500Hz级别 Sum=1000Hz
+
+命令C的集合={0x003，0x004，0x011 or 0x012 or 0x013,0x031,0x032(暂时没有),0x122，0x141+ID*2，0x151+ID*2} Sum=670Hz
+</code></pre>
+<p>简单的说就是，命令A每次都是0x121,命令B在两个IMU的0x131+ID之间切换。</p>
+<p>命令C的描述用列表表示</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">StdID</th>
+<th style="text-align:center">每100个的出现次数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">0x003</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">0x004</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">0x011</td>
+<td style="text-align:center">7</td>
+</tr>
+<tr>
+<td style="text-align:center">0x031</td>
+<td style="text-align:center">5</td>
+</tr>
+<tr>
+<td style="text-align:center">0x122</td>
+<td style="text-align:center">5</td>
+</tr>
+<tr>
+<td style="text-align:center">0x141+ID</td>
+<td style="text-align:center">10</td>
+</tr>
+<tr>
+<td style="text-align:center">0x141+ID+1</td>
+<td style="text-align:center">10</td>
+</tr>
+<tr>
+<td style="text-align:center">0x151+ID</td>
+<td style="text-align:center">10</td>
+</tr>
+<tr>
+<td style="text-align:center">0x151+ID+1</td>
+<td style="text-align:center">10</td>
+</tr>
+<tr>
+<td style="text-align:center">NULL</td>
+<td style="text-align:center">41</td>
+</tr>
+</tbody>
+</table>
+<p>实际逻辑等待进一步完善</p>
+
+    </body>
+    </html>
