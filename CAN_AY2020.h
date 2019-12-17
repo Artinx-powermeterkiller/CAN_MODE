@@ -11,7 +11,7 @@ typedef struct
 	int least_freq;
 	channl_schedule_table_t* schedule_table_ptr;
 }CAN_channel_t;
-N_MODE
+
 
 void CAN_AY2020_init(void);
 void CAN_Channl_init(void);
