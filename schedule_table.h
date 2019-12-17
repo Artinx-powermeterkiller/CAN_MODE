@@ -1,10 +1,6 @@
 #ifndef  SCHEDULE_TABLE_H
 #define SCHEDULE_TABLE_H
 
-#define Version 1
-
-#define CHANNEL_NUMBER 4
-
 #define PUBLIC_BASE_ID 0x000
 
 enum PUBLIC_FUNCTION
@@ -13,6 +9,7 @@ enum PUBLIC_FUNCTION
 	CLOCK=0x002,
 	READY=0x003
 };
+
 
 #define GIMALE_BASE_ID 0x010
 
@@ -29,7 +26,7 @@ enum CHASSIS_FUNCTION
 
 };
 
-#define SUPERC_BASE_ID 0x120
+#define SUPERC_BASE_ID
 
 enum SUPERC_FUNCTION
 {
@@ -51,20 +48,13 @@ enum IMU_FUNCTION
 	IMU_ANGLE=0x000,
 	IMU_ACC=0x010,
 	IMU_ANGLE_SPEED=0x020
-}; 
+};
 
 typedef struct
 {
-	int* channel_schedule_table;
+	int* schedule_table;
 	int table_length;
-} channel_schedule_table_t;
-
-int public_schedule_table_channel_[CHANNEL_NUMBER][] =
-{ { SUPERC_BASE_ID + SUPERC_ON_TIME_POWER },
-{ IMU_1_ID + IMU_ANGLE ,IMU_2_ID + IMU_ANGLE,IMU_3_ID+ IMU_ANGLE,,IMU_4_ID + IMU_ANGLE},
-{IMU_1_ID + IMU_ANGLE_SPEED,IMU_2_ID + IMU_ANGLE_SPEED,IMU_3_ID + IMU_ANGLE_SPEED,IMU_4_ID + IMU_ANGLE_SPEED,
-IMU_1_ID + IMU_ACC,IMU_2_ID + IMU_ACC,IMU_3_ID + IMU_ACC,IMU_4_ID + IMU_ACC},
-{} };
+} channl_schedule_table_t;
 
 #endif // ! SCHEDULE_TABLE_H
 
