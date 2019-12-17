@@ -3,13 +3,6 @@
 
 #include "CAN_AY2020.h"
 
-#define MY_BASE_ID 0x120
-
-typedef struct
-{
-	int on_time_power_id = MY_BASE_ID + 1;
-	int capacitance_state_id = MY_BASE_ID + 2;
-}CAN_ID_T;
-
+#define MY_BASE_ID SUPERC_BASE_ID
 
 #endif 

@@ -3,8 +3,6 @@
 
 #include "schedule_table.h"
 
-#define CHANNEL_NUMBER 4
-
 typedef struct
 {
 	int channel_id;
