@@ -9,3 +9,8 @@ void BSP_AY2020_CAN_init()
 {
 
 }
+
+void BSP_AY2020_Clock()
+{
+
+}
