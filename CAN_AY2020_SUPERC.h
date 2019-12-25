@@ -5,11 +5,7 @@
 
 #define MY_BASE_ID 0x120
 
-typedef struct
-{
-	int on_time_power_id = MY_BASE_ID + 1;
-	int capacitance_state_id = MY_BASE_ID + 2;
-}CAN_ID_T;
+
 
 
 #endif 

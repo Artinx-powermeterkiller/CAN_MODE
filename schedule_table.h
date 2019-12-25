@@ -1,6 +1,22 @@
 #ifndef  SCHEDULE_TABLE_H
 #define SCHEDULE_TABLE_H
 
+typedef signed char int8_t;
+typedef signed short int int16_t;
+typedef signed int int32_t;
+typedef signed long long int64_t;
+
+typedef unsigned char uint8_t;
+typedef unsigned short int uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+typedef unsigned char bool_t;
+typedef float fp32;
+typedef double fp64;
+
+#define CAN_ID_ENABLE 1
+#define CAN_ID_DISABLE 0
+
 #define PUBLIC_BASE_ID 0x000
 
 enum PUBLIC_FUNCTION
@@ -9,7 +25,6 @@ enum PUBLIC_FUNCTION
 	CLOCK=0x002,
 	READY=0x003
 };
-
 
 #define GIMALE_BASE_ID 0x010
 
@@ -49,12 +64,6 @@ enum IMU_FUNCTION
 	IMU_ACC=0x010,
 	IMU_ANGLE_SPEED=0x020
 };
-
-typedef struct
-{
-	int* schedule_table;
-	int table_length;
-} channl_schedule_table_t;
 
 #endif // ! SCHEDULE_TABLE_H
 
